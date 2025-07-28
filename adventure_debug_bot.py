@@ -24,8 +24,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-TELEGRAM_TOKEN = ""
-GROQ_API_KEY = ""
+TELEGRAM_TOKEN = "YOUR_TELEGRAM_TOKEN_HERE"
+GROQ_API_KEY = "YOUR_GROQ_API_KEY_HERE"
 
 if not TELEGRAM_TOKEN or not GROQ_API_KEY:
     raise ValueError(
