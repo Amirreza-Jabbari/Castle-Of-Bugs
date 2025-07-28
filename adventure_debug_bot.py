@@ -101,7 +101,7 @@ def load_sessions_from_file():
         logger.error(f"Could not load session file ({e}). Starting with empty sessions.")
         user_sessions = {}
 
-# --- Groq API Interaction (More Robust) ---
+# --- Groq API Interaction ---
 async def call_groq_api(
     system_prompt: str, user_prompt: str, expect_json: bool = True
 ) -> Optional[Union[dict, str]]:
@@ -147,7 +147,7 @@ async def call_groq_api(
             logger.error(f"Groq API request error: {e}")
         except Exception as e:
             logger.error(f"An unexpected error occurred when calling Groq API: {e}")
-        
+
         return None
 
 # --- Bot Helper Functions ---
@@ -165,9 +165,9 @@ def normalize_code(code: str) -> str:
 
 def format_room_message(description: str, snippet: str, room_number: int) -> str:
     """Formats the message for a new room, escaping the description for MarkdownV2."""
-    
+
     safe_description = escape_markdown(description, version=2)
-    
+
     return (
         f"🏰 *تالار شماره {room_number}*\n\n"
         f"{safe_description}\n\n"
@@ -186,8 +186,8 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Sends the welcome message."""
     welcome_text = (
         "درهای سنگین *قلعه باگ‌ها* به روی شما گشوده می‌شود 🏰\n\n"
-        "زمزمه کدهای شبح‌زده در راهروها می‌پیچد. تنها راه فرار، یافتن و ترمیم اشکالات جادویی است که در هر تالار پنهان شده.\n\n"
-        "برای ورود به اولین تالار، دکمه 'ورود به قلعه' را لمس کن."
+        "زمزمه کدهای شبح‌زده در راهروها می‌پیچد\. تنها راه فرار، یافتن و ترمیم اشکالات جادویی است که در هر تالار پنهان شده\.\n\n"
+        "برای ورود به اولین تالار، دکمه 'ورود به قلعه' را لمس کن\."
     )
     await update.message.reply_text(welcome_text, parse_mode="MarkdownV2", reply_markup=get_main_keyboard())
 
@@ -210,14 +210,14 @@ async def god_mode_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def enter_castle_task(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """The logic for starting a new game."""
     user_id = update.effective_user.id
-    
+
     await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
-    
+
     system_prompt = GAME_SYSTEM_PROMPT
     user_prompt = "Generate the first room (Room 1) for the debugging adventure game."
 
     response = await call_groq_api(system_prompt, user_prompt, expect_json=True)
-    
+
     if isinstance(response, dict) and all(k in response for k in ("description", "buggy_snippet", "correct_snippet")):
         session = RoomSession(user_id=user_id, **response)
         user_sessions[user_id] = session
@@ -250,9 +250,9 @@ async def hint_task(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"Buggy Code: ```python\n{session.buggy_snippet}\n```\n"
         f"Correct Code: ```python\n{session.correct_snippet}\n```"
     )
-    
+
     hint_text = await call_groq_api(system_prompt, user_prompt, expect_json=False)
-    
+
     if hint_text:
         safe_hint_text = escape_markdown(hint_text, version=2)
         await update.message.reply_text(f"💡 *نجوای راهنما:* {safe_hint_text}", parse_mode="MarkdownV2")
@@ -286,7 +286,7 @@ async def code_submission_task(update: Update, context: ContextTypes.DEFAULT_TYP
         system_prompt = GAME_SYSTEM_PROMPT
         user_prompt = f"Generate room number {session.room_number} of the debugging adventure game."
         response = await call_groq_api(system_prompt, user_prompt, expect_json=True)
-        
+
         if isinstance(response, dict) and all(k in response for k in ("description", "buggy_snippet", "correct_snippet")):
             session.description = response["description"]
             session.buggy_snippet = response["buggy_snippet"]
@@ -315,7 +315,7 @@ async def message_router(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     session = user_sessions.get(user_id)
     task_to_run = None
-    
+
     if text == "🎮 ورود به قلعه":
         if session and not session.is_complete:
             # FIX: Instead of a generic message, resend the current puzzle.
@@ -351,7 +351,7 @@ async def message_router(update: Update, context: ContextTypes.DEFAULT_TYPE):
             task_to_run = code_submission_task(update, context)
         else:
             await update.message.reply_text("پژواک کلمات شما در راهروهای خالی قلعه گم شد... از دکمه‌های جادویی پایین برای تعامل استفاده کنید.")
-    
+
     if task_to_run:
         user_processing_status[user_id] = True
         try:
@@ -362,7 +362,7 @@ async def message_router(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Log Errors caused by Updates and send a user-friendly message."""
     logger.error("Exception while handling an update:", exc_info=context.error)
-    
+
     if update and hasattr(update, 'effective_message'):
         try:
             await update.effective_message.reply_text("یک خطای پیش‌بینی نشده در جادوی قلعه رخ داد. لطفاً کمی بعد دوباره تلاش کنید.")
@@ -373,7 +373,7 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
 def main() -> None:
     """Starts the bot."""
     load_sessions_from_file()
-    
+
     logger.info("Building application...")
     app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
 
