@@ -3,6 +3,7 @@ import json
 import httpx
 import asyncio
 import logging
+import random
 from dataclasses import dataclass, asdict
 from typing import Dict, Optional, Union
 
@@ -59,6 +60,20 @@ GAME_SYSTEM_PROMPT = (
     "\n\n"
     "Crucially, avoid repeating the exact same bug type in consecutive rooms. Vary the challenges."
 )
+
+# Messages shown when a room is completed
+ROOM_COMPLETE_MESSAGES = [
+    "✅ طلسم این تالار شکسته شد! یک راهروی مخفی به سوی تالار شماره {room_number} پدیدار می‌شود...",
+    "🎉 طلسم شکست! حالا دریچه‌ای به تالار شماره {room_number} گشوده شده است...",
+    "🔓 دروازهٔ جدیدی باز شد و راه به تالار شماره {room_number} نمایان گشت...",
+    "✨ با موفقیت طلسم شکسته شد؛ راهروی تاریک تا تالار شماره {room_number} روشن گردید...",
+    "🏹 طلسم مغلوب شد و نشانه‌ای به تالار شماره {room_number} ظاهر شد...",
+    "🗝️ قفل جادویی باز شد؛ در ورودی تالار شماره {room_number} نمایان شد...",
+    "🔥 شعلهٔ امید روشن شد و مسیری به تالار شماره {room_number} گشوده گشت...",
+    "🌌 در پس پردهٔ سایه‌ها، درِ تالار شماره {room_number} هویدا شد...",
+    "💫 طلسم فرو ریخت و راه مخفی به تالار شماره {room_number} آشکار شد...",
+    "🛡️ سپر افسون‌شکسته کنار رفت و راه به تالار شماره {room_number} نمایان شد..."
+]
 
 # --- Data Structures and Game State ---
 USER_SESSIONS_FILE = "user_sessions.json"
@@ -280,8 +295,9 @@ async def code_submission_task(update: Update, context: ContextTypes.DEFAULT_TYP
             await cleanup_session(user_id)
             return
 
+        room_msg = random.choice(ROOM_COMPLETE_MESSAGES).format(room_number=session.room_number)
         await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
-        await update.message.reply_text(f"✅ طلسم این تالار شکسته شد! یک راهروی مخفی به سوی تالار شماره {session.room_number} پدیدار می‌شود...")
+        await update.message.reply_text(room_msg)
 
         system_prompt = GAME_SYSTEM_PROMPT
         user_prompt = f"Generate room number {session.room_number} of the debugging adventure game."
