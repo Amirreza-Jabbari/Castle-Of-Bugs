@@ -199,13 +199,13 @@ async def god_mode_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if session and not session.is_complete:
         answer = session.correct_snippet
         message = (
-            "🤫 *God Mode Activated!* 🤫\n\n"
+            "🤫 *God Mode Activated\\!* 🤫\n\n"
             "The correct solution for this room is:\n\n"
             f"```python\n{answer}\n```"
         )
         await update.message.reply_text(message, parse_mode="MarkdownV2")
     else:
-        await update.message.reply_text("You must be in the castle to use this command. Press 'Enter Castle' to start.")
+        await update.message.reply_text("You must be in the castle to use this command\\. Press 'Enter Castle' to start\\.")
 
 async def enter_castle_task(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """The logic for starting a new game."""
